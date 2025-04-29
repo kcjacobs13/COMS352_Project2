@@ -36,8 +36,13 @@ extern pthread_mutex_t root_dir_mutex;
 
 //inode data structure: inodes implemented in inode.c
 struct inode {
-    char block[NUM_POINTERS]; //(direct) pointers to data blocks; note: value<0 means the block is not used
-    int length; //length of the file of the inode
+    char block[NUM_POINTERS];
+    int length;
+    // Added for reader-writer problem
+    int reader_count;
+    pthread_mutex_t rwlock;
+    pthread_cond_t readers_done;
+    int writer_active;
 };
 extern struct inode inodes[NUM_INODES]; //global array of inodes
 extern pthread_mutex_t inodes_mutex; //mutex to guard mutually-exclusive access of inodes

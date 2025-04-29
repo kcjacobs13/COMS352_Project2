@@ -28,8 +28,17 @@ int RSFS_init(){
     pthread_mutex_init(&inode_bitmap_mutex,NULL);    
 
     //initialize inodes
-    for(int i=0; i<NUM_INODES; i++){
-        inodes[i].length=0;
+    for(int i=0; i<NUM_INODES; i++) {
+        inodes[i].length = 0;
+        inodes[i].reader_count = 0;    // Initialize reader count
+        inodes[i].writer_active = 0;    // Initialize writer flag
+        pthread_mutex_init(&inodes[i].rwlock, NULL);      // Initialize rwlock
+        pthread_cond_init(&inodes[i].readers_done, NULL); // Initialize condition variable
+        
+        // Initialize block array (if not already done elsewhere)
+        for(int j = 0; j < NUM_POINTERS; j++) {
+            inodes[i].block[j] = -1;
+        }
     }
     pthread_mutex_init(&inodes_mutex,NULL); 
 
@@ -204,17 +213,46 @@ int RSFS_open(char file_name, int access_flag) {
         return -3;
     }
 
+    struct inode *inode = &inodes[inode_number];
+    
+    // Lock the rwlock before checking/modifying reader/writer status
+    pthread_mutex_lock(&inode->rwlock);
+    
+    if (access_flag == RSFS_RDWR) {
+        // Writer access - wait until no readers and no writers
+        while (inode->reader_count > 0 || inode->writer_active) {
+            pthread_cond_wait(&inode->readers_done, &inode->rwlock);
+        }
+        inode->writer_active = 1;
+    } else {
+        // Reader access - wait until no writers
+        while (inode->writer_active) {
+            pthread_cond_wait(&inode->readers_done, &inode->rwlock);
+        }
+        inode->reader_count++;
+    }
+    
+    pthread_mutex_unlock(&inode->rwlock);
+
+    // Try to allocate an open file entry
     int fd = allocate_open_file_entry(access_flag, inode_number);
     if (fd < 0) {
+        // If allocation fails, we need to undo our reader/writer registration
+        pthread_mutex_lock(&inode->rwlock);
+        if (access_flag == RSFS_RDWR) {
+            inode->writer_active = 0;
+        } else {
+            inode->reader_count--;
+        }
+        pthread_cond_broadcast(&inode->readers_done);
+        pthread_mutex_unlock(&inode->rwlock);
+        
         printf("[RSFS_open] fail to allocate open file entry.\n");
         return -4;
     }
 
     return fd;
 }
-
-
-
 
 // RSFS_append: Append data from buf to the end of the file.
 // Locks the open file entry and inode during update. Allocates data blocks as needed.
@@ -527,12 +565,25 @@ int RSFS_close(int fd) {
         return -1;
     }
     
-    // Check if the access flag is valid
-    if (entry->access_flag != RSFS_RDONLY && entry->access_flag != RSFS_RDWR) {
+    // Get the inode and update reader/writer status
+    struct inode *inode = &inodes[inode_number];
+    pthread_mutex_lock(&inode->rwlock);
+    
+    // Update reader/writer status based on access flag
+    if (entry->access_flag == RSFS_RDWR) {
+        inode->writer_active = 0;
+    } else if (entry->access_flag == RSFS_RDONLY) {
+        inode->reader_count--;
+    } else {
         printf("[RSFS_close] invalid access flag: %d\n", entry->access_flag);
+        pthread_mutex_unlock(&inode->rwlock);
         pthread_mutex_unlock(&entry->entry_mutex);
         return -1;
     }
+    
+    // Signal waiting threads that access is available
+    pthread_cond_broadcast(&inode->readers_done);
+    pthread_mutex_unlock(&inode->rwlock);
     
     // Release this open file entry in the open file table
     entry->used = 0;
