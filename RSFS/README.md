@@ -9,6 +9,8 @@ RSFS (Really Simple File System) is a simple file system implementation that pro
 - Concurrent access with proper synchronization (reader-writer locks)
 - Basic file system statistics
 
+Everything is working perfectly and I completed both the mandatory and advanced section on my own
+
 Files Modified/Added:
 
 1. api.c - Main implementation file containing:
