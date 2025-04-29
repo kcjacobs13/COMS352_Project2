@@ -1,4 +1,4 @@
-Names: Keenan Jacobs and Conor O'Shea
+Names: Keenan Jacobs
 
 Description:
 RSFS (Really Simple File System) is a simple file system implementation that provides basic file operations in a multi-threaded environment. The file system supports:
