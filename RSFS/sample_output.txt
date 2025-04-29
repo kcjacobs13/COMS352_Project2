@@ -1,0 +1,304 @@
+[main] result of calling sys_init: 0
+
+
+-------------------Test for Isolated Cases-------------------------
+
+0[search_dir_internal] got root_data_block_number = 0
+1234567[create] fail to allocate an inode.
+[test_basic] fail to create file: H.
+[test_basic] have called to create 7 files.
+
+Current status of the file system:
+
+        File Name    Length   iNode #
+               A         0         1
+               B         0         2
+               C         0         3
+               D         0         4
+               E         0         5
+               F         0         6
+               G         0         7
+
+Total Data Blocks:   64,  Used: 1,  Unused: 63
+Total iNode Blocks:   8,  Used: 8,  Unused: 0
+Total Opened Files:   0
+
+[RSFS_open] fail to find file with name: H
+[test_basic] fail to open file: H
+[test_basic] have called to open 7 files.
+
+Current status of the file system:
+
+        File Name    Length   iNode #
+               A         0         1
+               B         0         2
+               C         0         3
+               D         0         4
+               E         0         5
+               F         0         6
+               G         0         7
+
+Total Data Blocks:   64,  Used: 1,  Unused: 63
+Total iNode Blocks:   8,  Used: 8,  Unused: 0
+Total Opened Files:   7
+
+[test_basic] have appended to each of the opened files.
+
+Current status of the file system:
+
+        File Name    Length   iNode #
+               A         5         1
+               B         6         2
+               C        21         3
+               D        20         4
+               E        30         5
+               F        30         6
+               G        42         7
+
+Total Data Blocks:   64,  Used: 9,  Unused: 55
+Total iNode Blocks:   8,  Used: 8,  Unused: 0
+Total Opened Files:   7
+
+[test_basic] have closed each of the opened files.
+
+Current status of the file system:
+
+        File Name    Length   iNode #
+               A         5         1
+               B         6         2
+               C        21         3
+               D        20         4
+               E        30         5
+               F        30         6
+               G        42         7
+
+Total Data Blocks:   64,  Used: 9,  Unused: 55
+Total iNode Blocks:   8,  Used: 8,  Unused: 0
+Total Opened Files:   0
+
+[RSFS_open] fail to find file with name: H
+[test_basic] have opened 7 files again.
+
+Current status of the file system:
+
+        File Name    Length   iNode #
+               A         5         1
+               B         6         2
+               C        21         3
+               D        20         4
+               E        30         5
+               F        30         6
+               G        42         7
+
+Total Data Blocks:   64,  Used: 9,  Unused: 55
+Total iNode Blocks:   8,  Used: 8,  Unused: 0
+Total Opened Files:   7
+
+File 'A' content: Alice
+File 'B' content: BobBob
+File 'C' content: CharlieCharlieCharlie
+File 'D' content: DavidDavidDavidDavid
+File 'E' content: ElaineElaineElaineElaineElaine
+File 'F' content: FrankFrankFrankFrankFrankFrank
+File 'G' content: GeorgeGeorgeGeorgeGeorgeGeorgeGeorgeGeorge
+
+[test_basic] have read and then closed each file.
+
+Current status of the file system:
+
+        File Name    Length   iNode #
+               A         5         1
+               B         6         2
+               C        21         3
+               D        20         4
+               E        30         5
+               F        30         6
+               G        42         7
+
+Total Data Blocks:   64,  Used: 9,  Unused: 55
+Total iNode Blocks:   8,  Used: 8,  Unused: 0
+Total Opened Files:   0
+
+
+[test_advanced_write] test to write 59 characters:
+ 00000011111122222233333344444455555566666677777788888899999 to the file from position 3.
+File 'A' new content: Ali00000011111122222233333344444455555566666677777788888899999
+File 'B' new content: Bob00000011111122222233333344444455555566666677777788888899999
+File 'C' new content: Cha00000011111122222233333344444455555566666677777788888899999
+File 'D' new content: Dav00000011111122222233333344444455555566666677777788888899999
+File 'E' new content: Ela00000011111122222233333344444455555566666677777788888899999
+File 'F' new content: Fra00000011111122222233333344444455555566666677777788888899999
+File 'G' new content: Geo00000011111122222233333344444455555566666677777788888899999
+
+[test_advanced_write] have read and then closed each file.
+
+Current status of the file system:
+
+        File Name    Length   iNode #
+               A        62         1
+               B        62         2
+               C        62         3
+               D        62         4
+               E        62         5
+               F        62         6
+               G        62         7
+
+Total Data Blocks:   64,  Used: 15,  Unused: 49
+Total iNode Blocks:   8,  Used: 8,  Unused: 0
+Total Opened Files:   0
+
+[test_basic] have deleted 6 files.
+
+Current status of the file system:
+
+        File Name    Length   iNode #
+               A        62         1
+
+Total Data Blocks:   64,  Used: 3,  Unused: 61
+Total iNode Blocks:   8,  Used: 2,  Unused: 6
+Total Opened Files:   0
+
+
+
+--------Test for Concurrent Readers/Writers-----------
+
+[writer 0] open file A with RDWR; return fd=0.
+
+Current status of the file system:
+
+        File Name    Length   iNode #
+               A        62         1
+
+Total Data Blocks:   64,  Used: 3,  Unused: 61
+Total iNode Blocks:   8,  Used: 2,  Unused: 6
+Total Opened Files:   1
+
+[writer 0] append 54 bytes of string.
+[writer 0] read 116 bytes of string: Ali00000011111122222233333344444455555566666677777788888899999hello 1, hello 2, hello 3, hello 4, hello 5, hello 6, 
+
+Current status of the file system:
+
+        File Name    Length   iNode #
+               A       116         1
+
+Total Data Blocks:   64,  Used: 5,  Unused: 59
+Total iNode Blocks:   8,  Used: 2,  Unused: 6
+Total Opened Files:   1
+
+[writer 0] close the file.
+[reader 0] open file A with READONLY; return fd=0.
+
+Current status of the file system:
+
+        File Name    Length   iNode #
+               A       116         1
+
+Total Data Blocks:   64,  Used: 5,  Unused: 59
+Total iNode Blocks:   8,  Used: 2,  Unused: 6
+Total Opened Files:   1
+
+[reader 0] read 116 bytes of string: Ali00000011111122222233333344444455555566666677777788888899999hello 1, hello 2, hello 3, hello 4, hello 5, hello 6, 
+[reader 1] open file A with READONLY; return fd=1.
+
+Current status of the file system:
+
+        File Name    Length   iNode #
+               A       116         1
+
+Total Data Blocks:   64,  Used: 5,  Unused: 59
+Total iNode Blocks:   8,  Used: 2,  Unused: 6
+Total Opened Files:   2
+
+[reader 1] read 116 bytes of string: Ali00000011111122222233333344444455555566666677777788888899999hello 1, hello 2, hello 3, hello 4, hello 5, hello 6, 
+[reader 2] open file A with READONLY; return fd=2.
+
+Current status of the file system:
+
+        File Name    Length   iNode #
+               A       116         1
+
+Total Data Blocks:   64,  Used: 5,  Unused: 59
+Total iNode Blocks:   8,  Used: 2,  Unused: 6
+Total Opened Files:   3
+
+[reader 2] read 116 bytes of string: Ali00000011111122222233333344444455555566666677777788888899999hello 1, hello 2, hello 3, hello 4, hello 5, hello 6, 
+[reader 3] open file A with READONLY; return fd=3.
+
+Current status of the file system:
+
+        File Name    Length   iNode #
+               A       116         1
+
+Total Data Blocks:   64,  Used: 5,  Unused: 59
+Total iNode Blocks:   8,  Used: 2,  Unused: 6
+Total Opened Files:   4
+
+[reader 3] read 116 bytes of string: Ali00000011111122222233333344444455555566666677777788888899999hello 1, hello 2, hello 3, hello 4, hello 5, hello 6, 
+[reader 0] close the file.
+[reader 1] close the file.
+
+Current status of the file system:
+
+        File Name    Length   iNode #
+               A       116         1
+
+Total Data Blocks:   64,  Used: 5,  Unused: 59
+Total iNode Blocks:   8,  Used: 2,  Unused: 6
+Total Opened Files:   2
+
+[reader 3] close the file.
+
+Current status of the file system:
+
+        File Name    Length   iNode #
+               A       116         1
+
+Total Data Blocks:   64,  Used: 5,  Unused: 59
+Total iNode Blocks:   8,  Used: 2,  Unused: 6
+Total Opened Files:   1
+
+[reader 2] close the file.
+
+Current status of the file system:
+
+        File Name    Length   iNode #
+               A       116         1
+
+Total Data Blocks:   64,  Used: 5,  Unused: 59
+Total iNode Blocks:   8,  Used: 2,  Unused: 6
+Total Opened Files:   0
+
+
+Current status of the file system:
+
+        File Name    Length   iNode #
+               A       116         1
+
+Total Data Blocks:   64,  Used: 5,  Unused: 59
+Total iNode Blocks:   8,  Used: 2,  Unused: 6
+Total Opened Files:   0
+
+[writer 1] open file A with RDWR; return fd=0.
+
+Current status of the file system:
+
+        File Name    Length   iNode #
+               A       116         1
+
+Total Data Blocks:   64,  Used: 5,  Unused: 59
+Total iNode Blocks:   8,  Used: 2,  Unused: 6
+Total Opened Files:   1
+
+[writer 1] append 54 bytes of string.
+[writer 1] read 170 bytes of string: Ali00000011111122222233333344444455555566666677777788888899999hello 1, hello 2, hello 3, hello 4, hello 5, hello 6, hello 1, hello 2, hello 3, hello 4, hello 5, hello 6, 
+
+Current status of the file system:
+
+        File Name    Length   iNode #
+               A       170         1
+
+Total Data Blocks:   64,  Used: 7,  Unused: 57
+Total iNode Blocks:   8,  Used: 2,  Unused: 6
+Total Opened Files:   1
+
+[writer 1] close the file.
