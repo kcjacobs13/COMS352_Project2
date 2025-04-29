@@ -26,7 +26,7 @@ struct dir_entry *search_dir_internal(char file_name){
             return NULL;
         }
         root_data_block = data_blocks[root_data_block_number];
-        root_inode->block[0]=root_data_block;
+        root_inode->block[0]=root_data_block_number;
         printf("[search_dir_internal] got root_data_block_number = %d\n", root_data_block_number);
     } 
 
